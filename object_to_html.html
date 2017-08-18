@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+	*{
+			margin: 0px;
+			box-sizing: border-box;
+
+	}
+
+		#header{
+			width: 100%;
+			height: 100px;
+			background-color: rgba(255,000,000,0.2);
+		}
+		#side-menu{
+			width: 19%;
+			height: 100vh;
+			display: inline-block;
+			background-color: rgba(000,255,000,0.2);
+
+
+		}
+		#main-body{
+			width: 80%;
+			height: 100vh;
+			display: inline-block;
+			background-color: rgba(0,0,255,0.2);
+
+		}
+	</style>
+	<title></title>
+</head>
+<body>
+
+<div id="body">
+	<div id="header"></div>
+	<div id="side-menu"></div>
+	<div id="main-body"></div>
+</div>
+
+<script type="text/javascript">
+	
+	var obj = {
+		root: true,
+		children: [
+			{
+				lastChild: false,
+				destination: 'root',
+				content: '',
+				eventListener: function(callback){
+					callback();
+						},
+				children: [
+					{
+						lastChild: false,
+						destination: 'header',
+						content: 'Rubriken',
+						eventListener: function(callback){
+							callback();
+						},
+						children: [
+							{
+								lastChild: true,
+								destination: 'logo',
+								content: 'bild.img',
+								type: 'dropdown',
+								eventListener: function(callback){
+									callback();
+								},
+								children: [
+								],
+							},
+						],
+					},
+					{
+						lastChild: false,
+						destination: 'side-menu',
+						content: 'en produkt kategori typ datorer',
+						eventListener: function(callback){
+							callback();
+						},
+						children: [
+							{
+								lastChild: false,
+								destination: 'side-menu',
+								content: 'en produkt kategori typ Dell',
+								eventListener: function(callback){
+									callback();
+								},
+								children: [
+									{	
+										lastChild: false,
+										destination: 'side-menu',
+										content: 'bärbara',
+										eventListener: function(callback){
+											callback();
+										},
+										children: [
+											{	
+												lastChild: true,
+												destination: 'main-body',
+												content: 'Dell - A2345',
+												eventListener: function(callback){
+													callback();
+												},
+												children: 
+												[]
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				]
+			}
+		],
+	}
+
+	//console.log(obj);
+	function extractContent(data, dest){
+		//console.log(dest);
+		document.getElementById('side-menu').innerHTML = '';
+		if(data.root){
+			//Första loopen, kanske göra något särskilt just här?
+			var parentElement = createPartialHtml('', 'div', ['root']);
+
+			var children = data.children;
+			for (var i = 0; i < children.length; i++) {
+				//console.log(children[i]);
+				extractContent(children[i], parentElement);
+			}
+		}else if(!data.root){
+			var children = data.children;
+			var parentElement = createPartialHtml(data.content, 'div', ['notRoot']);
+			for (var i = 0; i < children.length; i++) {
+				if(!children[i].lastChild){
+					var childElement = createPartialHtml(children[i].content, 'p', ['child']);
+					var newElement = mergeParentChild(parentElement, childElement);
+					console.log(newElement);
+					document.getElementById('side-menu').innerHTML = '';
+					document.getElementById('side-menu').appendChild(newElement);
+					extractContent(children[i], newElement);
+				}else{
+					console.log(' endpoint ', children[i].content, ' insert in parent ', children[i].destination);
+
+				}
+			}
+		}
+	}
+
+	function createPartialHtml(content, type, style){
+
+		var html = document.createElement(type);
+		for (var i = 0; i < style.length; i++) {
+			html.classList.add(style[i]);
+		}
+		html.innerHTML = content;
+
+		return html
+	}
+
+	function mergeParentChild(parent, child){
+
+		if(typeof(child) == 'string'){
+			var template = document.createElement('template');
+		    template.innerHTML = child;
+			parent.appendChild(template.content.firstChild);
+		}else{
+			parent.appendChild(child);
+		}
+	    return parent;
+
+	}
+
+	extractContent(obj, 'body');
+
+</script>
+</body>
+</html>
