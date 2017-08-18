@@ -5,7 +5,6 @@
 	*{
 			margin: 0px;
 			box-sizing: border-box;
-
 	}
 
 		#header{
@@ -15,7 +14,7 @@
 		}
 		#side-menu{
 			width: 19%;
-			height: 100vh;
+			height: 80vh;
 			display: inline-block;
 			background-color: rgba(000,255,000,0.2);
 
@@ -23,7 +22,7 @@
 		}
 		#main-body{
 			width: 80%;
-			height: 100vh;
+			height: 80vh;
 			display: inline-block;
 			background-color: rgba(0,0,255,0.2);
 
@@ -31,13 +30,22 @@
 	</style>
 	<title></title>
 </head>
-<body>
+<body id="root">
 
 <div id="body">
-	<div id="header"></div>
+	<div id="header">
+		<div id="logo"></div>
+	</div>
 	<div id="side-menu"></div>
 	<div id="main-body"></div>
 </div>
+
+
+<template id="card">
+	<div class="test">
+		<p id="cardContent">card</p>
+	</div>
+</template>
 
 <script type="text/javascript">
 	
@@ -46,7 +54,7 @@
 		children: [
 			{
 				lastChild: false,
-				destination: 'root',
+				destination: 'body',
 				content: '',
 				eventListener: function(callback){
 					callback();
@@ -64,7 +72,6 @@
 								lastChild: true,
 								destination: 'logo',
 								content: 'bild.img',
-								type: 'dropdown',
 								eventListener: function(callback){
 									callback();
 								},
@@ -118,36 +125,48 @@
 		],
 	}
 
-	//console.log(obj);
 	function extractContent(data, dest){
-		//console.log(dest);
-		document.getElementById('side-menu').innerHTML = '';
+		console.log('start ',data, dest);
 		if(data.root){
 			//Första loopen, kanske göra något särskilt just här?
+			console.log('if root, bara en gång');
 			var parentElement = createPartialHtml('', 'div', ['root']);
-
+			console.log(parentElement);
 			var children = data.children;
 			for (var i = 0; i < children.length; i++) {
-				//console.log(children[i]);
-				extractContent(children[i], parentElement);
+				console.log(children[i], parentElement);
+				var childElement = createPartialHtml(children[i].content, 'p', ['child']);
+				extractContent(childElement, parentElement);
 			}
 		}else if(!data.root){
+			//replaceHtml(data, dest);
 			var children = data.children;
-			var parentElement = createPartialHtml(data.content, 'div', ['notRoot']);
+			//var parentElement = createPartialHtml(data.content, 'div', ['notRoot']);
 			for (var i = 0; i < children.length; i++) {
 				if(!children[i].lastChild){
 					var childElement = createPartialHtml(children[i].content, 'p', ['child']);
-					var newElement = mergeParentChild(parentElement, childElement);
+					var newElement = mergeParentChild(data, childElement);
+					//appendHtml(newElement, children[i].destination);
 					console.log(newElement);
-					document.getElementById('side-menu').innerHTML = '';
-					document.getElementById('side-menu').appendChild(newElement);
 					extractContent(children[i], newElement);
 				}else{
-					console.log(' endpoint ', children[i].content, ' insert in parent ', children[i].destination);
-
+					//console.log(' endpoint ', children[i].content, ' insert in parent ', children[i].destination);
+					var childElement = createPartialHtml(children[i].content, 'p', ['child']);
+					var newElement = mergeParentChild(parentElement, childElement);
+					extractContent(children[i], newElement);
+					//appendHtml(newElement, children[i].destination);
 				}
 			}
 		}
+	}
+	function replaceHtml(html, dest){
+		console.log(dest, document.getElementById(dest));
+		while (document.getElementById(dest).firstChild) document.getElementById(dest).removeChild(document.getElementById(dest).firstChild);
+		document.getElementById(dest).appendChild(html)
+	}
+
+	function appendHtml(html, dest){
+		document.getElementById(dest).appendChild(html)
 	}
 
 	function createPartialHtml(content, type, style){
@@ -173,6 +192,12 @@
 	    return parent;
 
 	}
+	var p = createPartialHtml('hej', 'p', ['p-tag']);
+	var h1 = createPartialHtml('Rubrik', 'h1', ['h1-tag']);
+
+	/*appendHtml(h1, 'logo');
+	appendHtml(p, 'logo');
+*/
 
 	extractContent(obj, 'body');
 
