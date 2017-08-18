@@ -160,7 +160,7 @@
 		}
 	}
 	function replaceHtml(html, dest){
-		console.log(dest, document.getElementById(dest));
+		//console.log(dest, document.getElementById(dest));
 		while (document.getElementById(dest).firstChild) document.getElementById(dest).removeChild(document.getElementById(dest).firstChild);
 		document.getElementById(dest).appendChild(html)
 	}
