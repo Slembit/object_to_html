@@ -5,7 +5,6 @@
 	*{
 			margin: 0px;
 			box-sizing: border-box;
-			/*hej*/
 	}
 
 		#header{
@@ -31,15 +30,34 @@
 	</style>
 	<title></title>
 </head>
-<body id="root">
+<body id="body">
 
-<div id="body">
+<div id="content">
 	<div id="header">
 		<div id="logo"></div>
 	</div>
 	<div id="side-menu"></div>
 	<div id="main-body"></div>
 </div>
+
+
+<div id="lol">
+	<div class="huvud">
+		<div class="logga">
+			<div class="loggans_barn"></div>
+		</div>
+	</div>
+	<div class="sido-meny"></div>
+	<div class="huvud-kropp">
+		<div class="huvud-kropp-barn">
+			<div class="barns-barns-barn">
+				<div class="måste vara sista noden"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
 
 
 <template id="card">
@@ -55,7 +73,7 @@
 		children: [
 			{
 				lastChild: false,
-				destination: 'body',
+				destination: 'content',
 				content: '',
 				eventListener: function(callback){
 					callback();
@@ -64,7 +82,7 @@
 					{
 						lastChild: false,
 						destination: 'header',
-						content: 'Rubriken',
+						content: 'Header rubrik',
 						eventListener: function(callback){
 							callback();
 						},
@@ -73,6 +91,26 @@
 								lastChild: true,
 								destination: 'logo',
 								content: 'bild.img',
+								eventListener: function(callback){
+									callback();
+								},
+								children: [
+								],
+							},
+							{
+								lastChild: true,
+								destination: false,
+								content: 'picture description',
+								eventListener: function(callback){
+									callback();
+								},
+								children: [
+								],
+							},
+							{
+								lastChild: true,
+								destination: false,
+								content: 'Link',
 								eventListener: function(callback){
 									callback();
 								},
@@ -91,7 +129,8 @@
 						children: [
 							{
 								lastChild: false,
-								destination: 'side-menu',
+								//destination: 'side-menu',
+								destination: false,
 								content: 'en produkt kategori typ Dell',
 								eventListener: function(callback){
 									callback();
@@ -99,16 +138,30 @@
 								children: [
 									{	
 										lastChild: false,
-										destination: 'side-menu',
-										content: 'bärbara',
+										//destination: 'side-menu',
+										destination: false,
+
+										content: 'typ av dell datorer bärbara',
 										eventListener: function(callback){
 											callback();
 										},
 										children: [
 											{	
 												lastChild: true,
-												destination: 'main-body',
+												//destination: 'main-body',
+												destination: false,
 												content: 'Dell - A2345',
+												eventListener: function(callback){
+													callback();
+												},
+												children: 
+												[]
+											},
+											{	
+												lastChild: true,
+												//destination: 'main-body',
+												destination: false,
+												content: 'Dell - B2324',
 												eventListener: function(callback){
 													callback();
 												},
@@ -126,36 +179,51 @@
 		],
 	}
 
-	function extractContent(data, dest){
-		console.log('start ',data, dest);
-		if(data.root){
-			//Första loopen, kanske göra något särskilt just här?
-			console.log('if root, bara en gång');
-			var parentElement = createPartialHtml('', 'div', ['root']);
+	function extractContent(dataToExtract, html, familyTree){
+		//console.log('extracting... ',dataToExtract, html);
+		console.log('kommer jag hit efter sista loopen?', stop);
+		var ancestor = [];
+		var siblings = [];
+		if(dataToExtract.root){
+			var children = dataToExtract.children;
+			var parentElement = createPartialHtml('rootentillallt', 'div', ['body']);
 			console.log(parentElement);
-			var children = data.children;
 			for (var i = 0; i < children.length; i++) {
-				console.log(children[i], parentElement);
-				var childElement = createPartialHtml(children[i].content, 'p', ['child']);
-				extractContent(childElement, parentElement);
+				//console.log(children[i], parentElement);
+				var childElement = createPartialHtml(children[i].content, 'p', ['root_child']);
+				ancestor.unshift(childElement);
+				var family = mergeParentChild(parentElement, ancestor);
+
+				extractContent(children[i], family, ancestor);
 			}
-		}else if(!data.root){
-			//replaceHtml(data, dest);
-			var children = data.children;
-			//var parentElement = createPartialHtml(data.content, 'div', ['notRoot']);
+		}else if(!dataToExtract.root){
+
+			//replaceHtml(dataToExtract, html);
+			var children = dataToExtract.children;
+			
+			//var parentElement = createPartialHtml(dataToExtract.content, 'div', ['notRoot']);
 			for (var i = 0; i < children.length; i++) {
 				if(!children[i].lastChild){
-					var childElement = createPartialHtml(children[i].content, 'p', ['child']);
-					var newElement = mergeParentChild(data, childElement);
-					//appendHtml(newElement, children[i].destination);
-					console.log(newElement);
-					extractContent(children[i], newElement);
+
+					var childElement = createPartialHtml(children[i].content, 'p', ['child'+i]);
+					familyTree.unshift(childElement);
+					console.log(childElement ,familyTree);
+					var family = mergeParentChild(html, familyTree);
+					console.log(family);
+					if (children[i].destination) {
+						extractContent(children[i], family, familyTree);
+					}else{
+						extractContent(children[i], family, familyTree);
+					}
 				}else{
-					//console.log(' endpoint ', children[i].content, ' insert in parent ', children[i].destination);
-					var childElement = createPartialHtml(children[i].content, 'p', ['child']);
-					var newElement = mergeParentChild(parentElement, childElement);
-					extractContent(children[i], newElement);
-					//appendHtml(newElement, children[i].destination);
+					var childElement = createPartialHtml(children[i].content, 'p', ['lastNode']);
+					console.log('Skapade precis detta childElement som lastNode', childElement, ', Detta är syskonen... ',siblings);
+					siblings.unshift(childElement);
+
+					familyTree.unshift(siblings);
+					var family = mergeParentChild(html, familyTree);
+					console.log(familyTree);
+					extractContent(children[i], family, familyTree, siblings);
 				}
 			}
 		}
@@ -166,39 +234,88 @@
 		document.getElementById(dest).appendChild(html)
 	}
 
-	function appendHtml(html, dest){
-		document.getElementById(dest).appendChild(html)
+	function appendHtml(html, dest, callback){
+		
+		if(typeof(dest) == 'object'){
+			console.log('kommer jag till objekt?');
+			dest.appendChild(html);
+		}else if(typeof(dest) == 'string'){
+			console.log('kommer jag till string?');
+			document.getElementById(dest).appendChild(html);
+		}
+		callback();
 	}
 
-	function createPartialHtml(content, type, style){
+	function copy(obj){
+		return JSON.parse(JSON.stringify(obj))
+	}
+
+	function createPartialHtml(content, type, classes, id){
 
 		var html = document.createElement(type);
-		for (var i = 0; i < style.length; i++) {
-			html.classList.add(style[i]);
+		for (var i = 0; i < classes.length; i++) {
+			html.classList.add(classes[i]);
 		}
+		if(id){
+			html.id =id ;
+		}
+		
 		html.innerHTML = content;
 
 		return html
 	}
+	function isArray(obj){
+    	return !!obj && obj.constructor === Array;
+	}
+	function mergeParentChild(parent, ancestor){
+		var nextParent;
+		console.log(parent, ancestor);
+		for (var i = 1; i < ancestor.length; i++) {
+			console.log(isArray(ancestor[i]));
+			nextParent = i-1;
+			//console.log(ancestor[i] ,typeof(ancestor[i]) == 'object' , !isArray(ancestor[i]) );
 
-	function mergeParentChild(parent, child){
-
-		if(typeof(child) == 'string'){
-			var template = document.createElement('template');
-		    template.innerHTML = child;
-			parent.appendChild(template.content.firstChild);
-		}else{
-			parent.appendChild(child);
+			if(typeof(ancestor[i]) == 'object'  && !isArray(ancestor[i]) ){
+				console.log('vanlig')
+				var template = document.createElement('template');
+			    template.innerHTML = ancestor[nextParent];
+				parent = ancestor[i].appendChild(template.content.firstChild);
+			}else if(isArray(ancestor[i])){
+				console.log('fsdsasa');
+			}
 		}
+		
+		console.log(parent);
 	    return parent;
 
 	}
 	var p = createPartialHtml('hej', 'p', ['p-tag']);
-	var h1 = createPartialHtml('Rubrik', 'h1', ['h1-tag']);
+	var h1 = createPartialHtml('Rubrik', 'h1', ['h1-tag'], 'pe');
+	var p2 = createPartialHtml('parargraf', 'p', ['p2-tag']);
+	var p3 = createPartialHtml('mer paragraf', 'p', ['p3-tag']);
 
-	/*appendHtml(h1, 'logo');
-	appendHtml(p, 'logo');
-*/
+	/*appendHtml(h1, 'logo', function(){
+		appendHtml(p, h1, function(){
+			appendHtml(p2, p, function(){
+				appendHtml(p3, p2, function(){
+					console.log(document.getElementById('pe'));
+					console.log(document.getElementById('pe').lastChild);
+				});
+			});
+		});
+	});*/
+
+	var descendants = Array.prototype.slice.call(
+	  document.querySelector("#lol").querySelectorAll("*"),
+	  0
+	);
+	descendants.forEach(function(descendant) {
+	  display(descendant.className);
+	});
+	function display(msg) {
+	  console.log(msg);
+	}
+
 
 	extractContent(obj, 'body');
 
